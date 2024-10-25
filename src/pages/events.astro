@@ -7,7 +7,8 @@ import { readItems } from '@directus/sdk';
 import { DateTime } from 'luxon';
 
 // TODO: Add pagination
-import { PreviousEvents } from '@/components/PreviousEvents';
+import { SemesterCombobox } from '@/components/SemesterCombobox.tsx';
+import { SelectedSemester } from '@/stores/SelectedSemester.ts';
 
 const events = await directus.request(
   readItems('events', {
@@ -111,7 +112,20 @@ const upcomingEvents = events.filter(
         Previous Events
       </h1>
       <div class="mb-4">
-        <PreviousEvents client:load />
+        <SemesterCombobox client:load />
+      </div>
+      <!-- Single column on smaller devices, two column grid on larger screens -->
+      <div class="flex flex-col sm:grid sm:grid-cols-2 sm:gap-4">
+        {
+          events
+            .filter(
+              (event) =>
+                DateTime.fromISO(event.end_datetime, {
+                  zone: 'America/Los_Angeles',
+                }).toUTC() < DateTime.now().toUTC()
+            )
+            .map((event) => <EventCard event={event} />)
+        }
       </div>
     </div>
   </div>
